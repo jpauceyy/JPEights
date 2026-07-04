@@ -38,7 +38,40 @@
       "baseRating": 10
     }
   ],
-  "players": {},
+  "players": {
+    "testuser": {
+      "name": "testuser",
+      "displayName": "testuser",
+      "games": {},
+      "lockedWith": [],
+      "forcedOpposite": [],
+      "avatar": ""
+    },
+    "jpsauce": {
+      "name": "jpsauce",
+      "displayName": "JPSauce",
+      "games": {},
+      "lockedWith": [],
+      "forcedOpposite": [],
+      "avatar": ""
+    },
+    "operator_alpha": {
+      "name": "operator_alpha",
+      "displayName": "Operator_Alpha",
+      "games": {},
+      "lockedWith": [],
+      "forcedOpposite": [],
+      "avatar": ""
+    },
+    "operator_beta": {
+      "name": "operator_beta",
+      "displayName": "Operator_Beta",
+      "games": {},
+      "lockedWith": [],
+      "forcedOpposite": [],
+      "avatar": ""
+    }
+  },
   "matches": [],
   "activeGameId": "cod",
   "users": {

@@ -399,6 +399,10 @@ export const dbHelpers = {
       createdAt: new Date().toISOString(),
     };
     writeDb(db);
+
+    // Automatically register the user as a player in the player roster
+    dbHelpers.registerPlayer(username);
+
     return true;
   },
 
