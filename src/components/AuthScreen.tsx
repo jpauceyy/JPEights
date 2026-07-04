@@ -14,56 +14,6 @@ export default function AuthScreen({ onAuthSuccess, initialHasUsers }: AuthScree
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Captcha State
-  const [captcha, setCaptcha] = useState<{ id: string; question: string } | null>(null);
-  const [captchaAnswer, setCaptchaAnswer] = useState("");
-  const [captchaLoading, setCaptchaLoading] = useState(false);
-
-  // Interactive Slider Challenge
-  const [sliderTarget, setSliderTarget] = useState(50);
-  const [sliderValue, setSliderValue] = useState(15);
-  const [sliderMatched, setSliderMatched] = useState(false);
-
-  // Fetch captcha on register toggle
-  const fetchCaptcha = async () => {
-    setCaptchaLoading(true);
-    setError(null);
-    setCaptchaAnswer(""); // Clear previous answer to prevent stale submit loop
-    try {
-      const res = await fetch(`/api/auth/captcha?t=${Date.now()}`);
-      if (res.ok) {
-        const data = await res.json();
-        setCaptcha(data);
-        // Reset slider challenge target/value
-        const target = Math.floor(Math.random() * 40) + 30; // Random target between 30 and 70
-        setSliderTarget(target);
-        setSliderValue(15);
-        setSliderMatched(false);
-      } else {
-        setError("Failed to fetch security challenge.");
-      }
-    } catch (err) {
-      setError("Server connection lost. Could not load captcha.");
-    } finally {
-      setCaptchaLoading(false);
-    }
-  };
-
-  // Fetch captcha on register toggle
-  useEffect(() => {
-    if (isRegister) {
-      fetchCaptcha();
-    }
-  }, [isRegister]);
-
-  // Check if slider is close to the target (within +/- 2)
-  useEffect(() => {
-    if (Math.abs(sliderValue - sliderTarget) <= 2) {
-      setSliderMatched(true);
-    } else {
-      setSliderMatched(false);
-    }
-  }, [sliderValue, sliderTarget]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,34 +33,15 @@ export default function AuthScreen({ onAuthSuccess, initialHasUsers }: AuthScree
         setError("Password must be at least 6 characters.");
         return;
       }
-      if (!captcha) {
-        setError("Security challenge not loaded. Please try again.");
-        return;
-      }
-      if (!captchaAnswer.trim()) {
-        setError("Please solve the anti-bot question.");
-        return;
-      }
-      if (!sliderMatched) {
-        setError("Please calibrate the scope slider to lock targets.");
-        return;
-      }
     }
 
     setLoading(true);
     try {
       const endpoint = isRegister ? "/api/auth/register" : "/api/auth/login";
-      const payload = isRegister
-        ? {
-            username,
-            password,
-            captchaId: captcha?.id,
-            captchaAnswer,
-          }
-        : {
-            username,
-            password,
-          };
+      const payload = {
+        username,
+        password,
+      };
 
       const res = await fetch(endpoint, {
         method: "POST",
@@ -133,9 +64,6 @@ export default function AuthScreen({ onAuthSuccess, initialHasUsers }: AuthScree
       onAuthSuccess(data.token, data.username);
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred.");
-      if (isRegister) {
-        fetchCaptcha(); // Refresh captcha on failure
-      }
     } finally {
       setLoading(false);
     }
@@ -237,97 +165,10 @@ export default function AuthScreen({ onAuthSuccess, initialHasUsers }: AuthScree
             </div>
           )}
 
-          {/* Anti-Bot Verification Sector (Register Only) */}
-          {isRegister && (
-            <div className="mt-6 pt-5 border-t border-slate-800/80 space-y-5">
-              <span className="text-[10px] font-black text-emerald-400/80 uppercase tracking-widest font-mono block text-center">
-                🤖 ANTI-BOT SECURITY CLEARANCE
-              </span>
-
-              {/* Slider Scope Challenge */}
-              <div className="bg-[#0e121a] border border-slate-800/80 p-4 rounded-xl space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">
-                    Scope Optic Alignment
-                  </span>
-                  <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-black">
-                    TARGET: {sliderTarget}%
-                  </span>
-                </div>
-
-                <div className="relative pt-1">
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={sliderValue}
-                    onChange={(e) => setSliderValue(parseInt(e.target.value, 10))}
-                    className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
-                  />
-                  {/* Visual tick for target */}
-                  <div
-                    className="absolute top-1 w-1 h-3 bg-red-500 pointer-events-none rounded"
-                    style={{ left: `${sliderTarget}%` }}
-                  />
-                </div>
-
-                <div className="flex justify-between items-center text-[10px] font-mono text-slate-500">
-                  <span>Current: {sliderValue}%</span>
-                  {sliderMatched ? (
-                    <span className="text-emerald-400 font-bold flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3" /> TARGET LOCKED
-                    </span>
-                  ) : (
-                    <span className="text-amber-500/80 animate-pulse">LOCKING OPTIC...</span>
-                  )}
-                </div>
-              </div>
-
-              {/* Trivia/Math Captcha Challenge */}
-              <div className="bg-[#0e121a] border border-slate-800/80 p-4 rounded-xl space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">
-                    Verification Chip Decryption
-                  </span>
-                  <button
-                    type="button"
-                    onClick={fetchCaptcha}
-                    disabled={captchaLoading}
-                    className="text-[10px] text-emerald-400 font-mono flex items-center gap-1 hover:text-emerald-300 disabled:opacity-50"
-                  >
-                    <RefreshCw className={`w-3 h-3 ${captchaLoading ? "animate-spin" : ""}`} /> Refresh
-                  </button>
-                </div>
-
-                {captchaLoading ? (
-                  <div className="py-4 text-center font-mono text-xs text-slate-500">
-                    Generating decrypt challenge...
-                  </div>
-                ) : (
-                  captcha && (
-                    <div className="space-y-2.5">
-                      <div className="p-2.5 bg-slate-900 border border-slate-800 rounded-lg text-center font-mono text-xs font-black text-gray-300">
-                        {captcha.question}
-                      </div>
-                      <input
-                        type="text"
-                        required={isRegister}
-                        value={captchaAnswer}
-                        onChange={(e) => setCaptchaAnswer(e.target.value)}
-                        placeholder="Type answer here..."
-                        className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500/40 rounded-lg px-3 py-2 text-white font-mono text-xs placeholder-slate-700 focus:outline-none"
-                      />
-                    </div>
-                  )
-                )}
-              </div>
-            </div>
-          )}
-
           {/* Submit Action Button */}
           <button
             type="submit"
-            disabled={loading || (isRegister && (!sliderMatched || !captchaAnswer))}
+            disabled={loading}
             className="w-full relative group mt-3 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-xl transition-all font-mono text-sm uppercase tracking-wider flex items-center justify-center gap-2 overflow-hidden shadow-lg shadow-emerald-950/20"
           >
             {loading ? (

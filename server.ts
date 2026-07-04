@@ -132,45 +132,9 @@ async function startServer() {
     res.json({ status: "ok", time: new Date().toISOString() });
   });
 
-  // Captcha active cache & list
-  const activeCaptchas = new Map<string, string>();
-  const CAPTCHA_POOL = [
-    { q: "What is 15 + 18?", a: "33" },
-    { q: "What is 40 - 16?", a: "24" },
-    { q: "What is 7 * 8?", a: "56" },
-    { q: "What is the sum of 25 and 17?", a: "42" },
-    { q: "Type the word 'GHOST' in all lowercase letters:", a: "ghost" },
-    { q: "Type the word 'soap' in all uppercase letters:", a: "SOAP" },
-    { q: "Type the word 'tactical' in all lowercase letters:", a: "tactical" },
-    { q: "What is Captain Price's Task Force number? (Task Force ???)", a: "141" },
-    { q: "What is the opposite of 'friendly' in a match?", a: "enemy" }
-  ];
-
-  // Auth endpoints
-  app.get("/api/auth/captcha", (req, res) => {
-    try {
-      res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
-      res.setHeader("Pragma", "no-cache");
-      res.setHeader("Expires", "0");
-
-      const index = Math.floor(Math.random() * CAPTCHA_POOL.length);
-      const item = CAPTCHA_POOL[index];
-      const id = "cap_" + Math.random().toString(36).substring(2, 11);
-      activeCaptchas.set(id, item.a);
-      
-      setTimeout(() => {
-        activeCaptchas.delete(id);
-      }, 5 * 60 * 1000);
-
-      res.json({ id, question: item.q });
-    } catch (err: any) {
-      res.status(500).json({ error: err.message });
-    }
-  });
-
   app.post("/api/auth/register", (req, res) => {
     try {
-      const { username, password, captchaId, captchaAnswer } = req.body;
+      const { username, password } = req.body;
       if (!username || !password) {
         return res.status(400).json({ error: "Username and password are required." });
       }
@@ -182,17 +146,6 @@ async function startServer() {
       if (password.length < 6) {
         return res.status(400).json({ error: "Password must be at least 6 characters long." });
       }
-
-      if (!captchaId || !captchaAnswer) {
-        return res.status(400).json({ error: "Anti-bot verification is required." });
-      }
-
-      const expected = activeCaptchas.get(captchaId);
-      if (!expected || expected.toLowerCase().trim() !== captchaAnswer.toLowerCase().trim()) {
-        return res.status(400).json({ error: "Anti-Bot Verification Failed. Incorrect answer." });
-      }
-
-      activeCaptchas.delete(captchaId);
 
       const passwordHash = crypto.createHash("sha256").update(password).digest("hex");
       const success = dbHelpers.registerUser(trimmedUser, passwordHash);
