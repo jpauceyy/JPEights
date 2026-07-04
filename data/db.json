@@ -1,0 +1,44 @@
+{
+  "games": [
+    {
+      "id": "cod",
+      "name": "Call of Duty",
+      "killsWeight": 2,
+      "deathsWeight": 1.2,
+      "assistsWeight": 0.6,
+      "scoreWeight": 0.01,
+      "baseRating": 15,
+      "scoreOnly": true
+    },
+    {
+      "id": "valorant",
+      "name": "Valorant",
+      "killsWeight": 1.5,
+      "deathsWeight": 1,
+      "assistsWeight": 0.5,
+      "scoreWeight": 0.05,
+      "baseRating": 10
+    },
+    {
+      "id": "counterstrike",
+      "name": "Counter-Strike 2",
+      "killsWeight": 2,
+      "deathsWeight": 1,
+      "assistsWeight": 1,
+      "scoreWeight": 0.02,
+      "baseRating": 10
+    },
+    {
+      "id": "custom",
+      "name": "Custom / Generic",
+      "killsWeight": 2,
+      "deathsWeight": 1,
+      "assistsWeight": 1,
+      "scoreWeight": 0.01,
+      "baseRating": 10
+    }
+  ],
+  "players": {},
+  "matches": [],
+  "activeGameId": "cod"
+}

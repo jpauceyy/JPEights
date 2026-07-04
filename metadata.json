@@ -1,0 +1,6 @@
+{
+  "name": "JPEights",
+  "description": "Automatically extract player performance stats from Call of Duty match screenshots and generate fair, balanced teams.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
