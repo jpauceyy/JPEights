@@ -40,5 +40,12 @@
   ],
   "players": {},
   "matches": [],
-  "activeGameId": "cod"
+  "activeGameId": "cod",
+  "users": {
+    "testuser": {
+      "username": "testuser",
+      "passwordHash": "9f735e0df9a1ddc702bf0a1a7b83033f9f7153a00c29de82cedadc9957289b05",
+      "createdAt": "2026-07-04T18:43:39.682Z"
+    }
+  }
 }
