@@ -111,9 +111,16 @@ async function startServer() {
 
   // Apply authMiddleware to all API routes EXCEPT health, auth endpoints
   app.use("/api", (req, res, next) => {
+    const pathLower = req.path.toLowerCase();
+    const urlLower = req.originalUrl.toLowerCase();
+
     if (
-      req.path === "/health" ||
-      req.path.startsWith("/auth/")
+      pathLower === "/health" ||
+      pathLower.startsWith("/auth/") ||
+      pathLower.startsWith("/api/auth/") ||
+      pathLower.startsWith("/api/health") ||
+      urlLower.includes("/auth/") ||
+      urlLower.includes("/health")
     ) {
       return next();
     }
