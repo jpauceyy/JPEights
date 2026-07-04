@@ -56,6 +56,11 @@
       "username": "Operator_Alpha",
       "passwordHash": "245b22dce938051efc28cf4364928fa26e171db139755311a93703ba65fd6d07",
       "createdAt": "2026-07-04T19:14:39.265Z"
+    },
+    "operator_beta": {
+      "username": "Operator_Beta",
+      "passwordHash": "245b22dce938051efc28cf4364928fa26e171db139755311a93703ba65fd6d07",
+      "createdAt": "2026-07-04T19:20:25.962Z"
     }
   }
 }
