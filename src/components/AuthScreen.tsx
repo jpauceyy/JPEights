@@ -28,11 +28,17 @@ export default function AuthScreen({ onAuthSuccess, initialHasUsers }: AuthScree
   const fetchCaptcha = async () => {
     setCaptchaLoading(true);
     setError(null);
+    setCaptchaAnswer(""); // Clear previous answer to prevent stale submit loop
     try {
       const res = await fetch("/api/auth/captcha");
       if (res.ok) {
         const data = await res.json();
         setCaptcha(data);
+        // Reset slider challenge target/value
+        const target = Math.floor(Math.random() * 40) + 30; // Random target between 30 and 70
+        setSliderTarget(target);
+        setSliderValue(15);
+        setSliderMatched(false);
       } else {
         setError("Failed to fetch security challenge.");
       }
@@ -43,14 +49,10 @@ export default function AuthScreen({ onAuthSuccess, initialHasUsers }: AuthScree
     }
   };
 
-  // Generate randomized slider target on register
+  // Fetch captcha on register toggle
   useEffect(() => {
     if (isRegister) {
       fetchCaptcha();
-      const target = Math.floor(Math.random() * 40) + 30; // Random target between 30 and 70
-      setSliderTarget(target);
-      setSliderValue(15);
-      setSliderMatched(false);
     }
   }, [isRegister]);
 
