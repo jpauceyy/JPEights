@@ -149,6 +149,10 @@ async function startServer() {
   // Auth endpoints
   app.get("/api/auth/captcha", (req, res) => {
     try {
+      res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+      res.setHeader("Pragma", "no-cache");
+      res.setHeader("Expires", "0");
+
       const index = Math.floor(Math.random() * CAPTCHA_POOL.length);
       const item = CAPTCHA_POOL[index];
       const id = "cap_" + Math.random().toString(36).substring(2, 11);

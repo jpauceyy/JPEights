@@ -51,6 +51,11 @@
       "username": "JPSauce",
       "passwordHash": "0de736063b6deb27e70f58060cd3998118fa38829d3c3f07199aa816fb8fa544",
       "createdAt": "2026-07-04T18:50:00.000Z"
+    },
+    "operator_alpha": {
+      "username": "Operator_Alpha",
+      "passwordHash": "245b22dce938051efc28cf4364928fa26e171db139755311a93703ba65fd6d07",
+      "createdAt": "2026-07-04T19:14:39.265Z"
     }
   }
 }

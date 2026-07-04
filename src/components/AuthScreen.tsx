@@ -30,7 +30,7 @@ export default function AuthScreen({ onAuthSuccess, initialHasUsers }: AuthScree
     setError(null);
     setCaptchaAnswer(""); // Clear previous answer to prevent stale submit loop
     try {
-      const res = await fetch("/api/auth/captcha");
+      const res = await fetch(`/api/auth/captcha?t=${Date.now()}`);
       if (res.ok) {
         const data = await res.json();
         setCaptcha(data);
