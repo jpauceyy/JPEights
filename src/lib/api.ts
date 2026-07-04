@@ -6,5 +6,12 @@ export async function apiFetch(input: RequestInfo | URL, init?: RequestInit): Pr
     (headers as Record<string, string>)["Authorization"] = `Bearer ${token}`;
     options.headers = headers;
   }
-  return window.fetch(input, options);
+  
+  const baseUrl = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+  let url = input;
+  if (typeof input === "string" && input.startsWith("/")) {
+    url = `${baseUrl}${input}`;
+  }
+  
+  return window.fetch(url, options);
 }

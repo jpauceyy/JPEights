@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { ShieldCheck, Lock, User, RefreshCw, AlertTriangle, Crosshair, ArrowRight, CheckCircle2 } from "lucide-react";
+import { apiFetch } from "../lib/api";
 
 interface AuthScreenProps {
   onAuthSuccess: (token: string, username: string) => void;
@@ -43,7 +44,7 @@ export default function AuthScreen({ onAuthSuccess, initialHasUsers }: AuthScree
         password,
       };
 
-      const res = await fetch(endpoint, {
+      const res = await apiFetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
