@@ -46,6 +46,11 @@
       "username": "testuser",
       "passwordHash": "9f735e0df9a1ddc702bf0a1a7b83033f9f7153a00c29de82cedadc9957289b05",
       "createdAt": "2026-07-04T18:43:39.682Z"
+    },
+    "jpsauce": {
+      "username": "JPSauce",
+      "passwordHash": "0de736063b6deb27e70f58060cd3998118fa38829d3c3f07199aa816fb8fa544",
+      "createdAt": "2026-07-04T18:50:00.000Z"
     }
   }
 }
