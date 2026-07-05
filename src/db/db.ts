@@ -74,6 +74,12 @@ export interface DatabaseSchema {
 const DB_DIR = path.join(process.cwd(), "data");
 const DB_FILE = path.join(DB_DIR, "db.json");
 
+// On Vercel the filesystem is read-only except for /tmp.
+// We copy the seeded db.json to /tmp on first cold-start and use that for all I/O.
+const IS_VERCEL = !!process.env.VERCEL;
+const TMP_DB_FILE = path.join("/tmp", "db.json");
+const WRITABLE_DB_FILE = IS_VERCEL ? TMP_DB_FILE : DB_FILE;
+
 const defaultGames: GameConfig[] = [
   {
     id: "cod",
@@ -126,6 +132,17 @@ const initialDb: DatabaseSchema = {
 };
 
 export function initDb() {
+  if (IS_VERCEL) {
+    // On Vercel: seed /tmp/db.json from the bundled data/db.json if not already present
+    if (!fs.existsSync(TMP_DB_FILE)) {
+      if (fs.existsSync(DB_FILE)) {
+        fs.copyFileSync(DB_FILE, TMP_DB_FILE);
+      } else {
+        fs.writeFileSync(TMP_DB_FILE, JSON.stringify(initialDb, null, 2), "utf-8");
+      }
+    }
+    return;
+  }
   if (!fs.existsSync(DB_DIR)) {
     fs.mkdirSync(DB_DIR, { recursive: true });
   }
@@ -137,7 +154,7 @@ export function initDb() {
 export function readDb(): DatabaseSchema {
   initDb();
   try {
-    const data = fs.readFileSync(DB_FILE, "utf-8");
+    const data = fs.readFileSync(WRITABLE_DB_FILE, "utf-8");
     const db = JSON.parse(data);
     if (!db.users) {
       db.users = {};
@@ -150,8 +167,10 @@ export function readDb(): DatabaseSchema {
 }
 
 export function writeDb(db: DatabaseSchema) {
-  initDb();
-  fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2), "utf-8");
+  if (!IS_VERCEL) {
+    initDb(); // Ensure local directory exists
+  }
+  fs.writeFileSync(WRITABLE_DB_FILE, JSON.stringify(db, null, 2), "utf-8");
 }
 
 // Rating calculator based on weight configs
