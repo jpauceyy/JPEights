@@ -50,14 +50,19 @@ export interface MatchRecord {
   gameName: string;
   screenshotsCount: number;
   players: PlayerStats[];
+  gameMode?: "Hardpoint" | "Search & Destroy";
+  teamAScore?: number;
+  teamBScore?: number;
   teams?: {
     teamA: {
       players: PlayerStats[];
       totalRating: number;
+      score?: number;
     };
     teamB: {
       players: PlayerStats[];
       totalRating: number;
+      score?: number;
     };
     difference: number;
   };

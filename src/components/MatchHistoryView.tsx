@@ -108,6 +108,20 @@ export default function MatchHistoryView({ matches, onRefresh, isAdmin = false }
                       <span className="text-amber-400">Diff: {match.teams.difference}</span>
                     </div>
 
+                    {/* Game Score (Hardpoint/Snd) */}
+                    {match.teamAScore !== undefined && match.teamBScore !== undefined && (
+                      <div className="flex items-center gap-2 text-xs font-mono font-bold bg-slate-950/40 px-3 py-2.5 rounded-lg border border-slate-900">
+                        {match.gameMode && <span className="text-gray-400/80 mr-1">[{match.gameMode}]</span>}
+                        <span className={match.teamAScore > match.teamBScore ? "text-emerald-400 font-extrabold" : "text-blue-400"}>
+                          Alpha: {match.teamAScore}
+                        </span>
+                        <span className="text-gray-600 font-normal">vs</span>
+                        <span className={match.teamBScore > match.teamAScore ? "text-emerald-400 font-extrabold" : "text-purple-400"}>
+                          Omega: {match.teamBScore}
+                        </span>
+                      </div>
+                    )}
+
                     <div className="flex items-center gap-2">
                       <button
                         onClick={(e) => {

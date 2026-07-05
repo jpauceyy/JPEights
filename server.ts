@@ -331,7 +331,7 @@ app.get("/api/matches", (req, res) => {
 
 app.post("/api/matches", (req, res) => {
   try {
-    const { id, gameId, gameName, screenshotsCount, players, teams } = req.body;
+    const { id, gameId, gameName, screenshotsCount, players, teams, gameMode, teamAScore, teamBScore } = req.body;
     if (!gameId || !players || !Array.isArray(players)) {
       return res.status(400).json({ error: "Missing required fields: gameId, players" });
     }
@@ -343,6 +343,9 @@ app.post("/api/matches", (req, res) => {
       screenshotsCount: Number(screenshotsCount || 0),
       players,
       teams,
+      gameMode,
+      teamAScore,
+      teamBScore,
     });
     res.json(match);
   } catch (err: any) {
