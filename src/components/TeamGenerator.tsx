@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Users, Shuffle, ArrowLeftRight, Check, Copy, Save, Award, Sparkles, FileText, Lock, EyeOff } from "lucide-react";
+import { Users, Shuffle, ArrowLeftRight, Check, Copy, Save, Award, Sparkles, FileText, Lock, EyeOff, AlertCircle } from "lucide-react";
 import { PlayerStats, TeamSplit, GameConfig, PlayerHistory } from "../types";
 import { apiFetch } from "../lib/api";
 
@@ -34,24 +34,28 @@ export default function TeamGenerator({
   const [copied, setCopied] = useState(false);
 
   // New customization states
-  const [matchFormat, setMatchFormat] = useState<"all" | "3v3" | "4v4">("all");
+  const [matchFormat, setMatchFormat] = useState<"all" | "2v2" | "3v3" | "4v4">("all");
   const [generationMode, setGenerationMode] = useState<"balanced" | "random">("balanced");
   const [benchPlayers, setBenchPlayers] = useState<PlayerStats[]>([]);
+  const [balanceError, setBalanceError] = useState<string | null>(null);
 
   // Auto balance on player load or config change
   const triggerBalance = async () => {
     if (currentPlayers.length === 0) return;
     setIsBalancing(true);
     setSaveStatus(null);
+    setBalanceError(null);
     setBenchPlayers([]);
 
     let targetCount = currentPlayers.length;
+    if (matchFormat === "2v2") targetCount = 4;
     if (matchFormat === "3v3") targetCount = 6;
     if (matchFormat === "4v4") targetCount = 8;
 
     if (currentPlayers.length < targetCount) {
       setIsBalancing(false);
       setTeamSplit(null);
+      setBalanceError(null);
       return;
     }
 
@@ -91,7 +95,10 @@ export default function TeamGenerator({
           }),
         });
 
-        if (!res.ok) throw new Error("Failed to balance teams");
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || "Failed to balance teams");
+        }
         const data = await res.json();
         setTeamSplit({
           teamA: data.teamA,
@@ -102,8 +109,10 @@ export default function TeamGenerator({
           sizeDiff: data.sizeDiff,
           constraintsSatisfied: data.constraintsSatisfied,
         });
-      } catch (err) {
+      } catch (err: any) {
         console.error(err);
+        setBalanceError(err.message || "Failed to contact the matchmaking server. Please ensure the dev server is running.");
+        setTeamSplit(null);
       } finally {
         setIsBalancing(false);
       }
@@ -142,6 +151,7 @@ export default function TeamGenerator({
     } else {
       setTeamSplit(null);
       setBenchPlayers([]);
+      setBalanceError(null);
     }
   }, [currentPlayers, gameConfig, matchFormat, generationMode]);
 
@@ -289,7 +299,7 @@ export default function TeamGenerator({
     );
   };
 
-  const neededPlayers = matchFormat === "3v3" ? 6 : matchFormat === "4v4" ? 8 : 0;
+  const neededPlayers = matchFormat === "2v2" ? 4 : matchFormat === "3v3" ? 6 : matchFormat === "4v4" ? 8 : 0;
   const hasEnoughPlayers = currentPlayers.length >= neededPlayers;
 
   return (
@@ -386,6 +396,16 @@ export default function TeamGenerator({
               Roster Default
             </button>
             <button
+              onClick={() => setMatchFormat("2v2")}
+              className={`flex-1 py-1.5 px-3 text-xs font-bold rounded-md transition-all ${
+                matchFormat === "2v2"
+                  ? "bg-blue-600 text-white shadow-sm"
+                  : "text-gray-400 hover:text-white"
+              }`}
+            >
+              2v2 Match
+            </button>
+            <button
               onClick={() => setMatchFormat("3v3")}
               className={`flex-1 py-1.5 px-3 text-xs font-bold rounded-md transition-all ${
                 matchFormat === "3v3"
@@ -432,6 +452,18 @@ export default function TeamGenerator({
           <p className="text-xs text-gray-400">
             You need at least {neededPlayers} players in the active roster to generate a {matchFormat} match. 
             Currently you have {currentPlayers.length} players.
+          </p>
+        </div>
+      )}
+
+      {/* Error message for matchmaking failures */}
+      {hasEnoughPlayers && balanceError && (
+        <div className="bg-red-950/20 border border-red-900/40 p-4 rounded-xl text-center space-y-2">
+          <p className="text-sm font-semibold text-red-350 flex items-center justify-center gap-2">
+            <AlertCircle className="w-4 h-4 text-red-400" /> Matchmaker Offline / Error
+          </p>
+          <p className="text-xs text-gray-400">
+            {balanceError}
           </p>
         </div>
       )}
