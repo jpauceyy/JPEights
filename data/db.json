@@ -70,6 +70,62 @@
       "lockedWith": [],
       "forcedOpposite": [],
       "avatar": ""
+    },
+    "adi": {
+      "name": "adi",
+      "displayName": "Adi",
+      "games": {},
+      "lockedWith": [],
+      "forcedOpposite": [],
+      "avatar": ""
+    },
+    "fenurz": {
+      "name": "fenurz",
+      "displayName": "Fenurz",
+      "games": {},
+      "lockedWith": [],
+      "forcedOpposite": [],
+      "avatar": ""
+    },
+    "stillsat": {
+      "name": "stillsat",
+      "displayName": "StillSat",
+      "games": {},
+      "lockedWith": [],
+      "forcedOpposite": [],
+      "avatar": ""
+    },
+    "uquo": {
+      "name": "uquo",
+      "displayName": "Uquo",
+      "games": {},
+      "lockedWith": [],
+      "forcedOpposite": [],
+      "avatar": ""
+    },
+    "peskysumo": {
+      "name": "peskysumo",
+      "displayName": "PeskySumo",
+      "games": {},
+      "lockedWith": [],
+      "forcedOpposite": [],
+      "avatar": ""
+    },
+    "miran": {
+      "name": "miran",
+      "displayName": "Miran",
+      "games": {},
+      "lockedWith": [],
+      "forcedOpposite": [],
+      "avatar": ""
+    },
+    "rancid": {
+      "name": "rancid",
+      "displayName": "Rancid",
+      "games": {},
+      "lockedWith": [],
+      "forcedOpposite": [],
+      "avatar": ""
     }
   },
   "matches": [],
@@ -94,6 +150,41 @@
       "username": "Operator_Beta",
       "passwordHash": "245b22dce938051efc28cf4364928fa26e171db139755311a93703ba65fd6d07",
       "createdAt": "2026-07-04T19:20:25.962Z"
+    },
+    "adi": {
+      "username": "Adi",
+      "passwordHash": "008c70392e3abfbd0fa47bbc2ed96aa99bd49e159727fcba0f2e6abeb3a9d601",
+      "createdAt": "2026-07-05T16:44:00.000Z"
+    },
+    "fenurz": {
+      "username": "Fenurz",
+      "passwordHash": "008c70392e3abfbd0fa47bbc2ed96aa99bd49e159727fcba0f2e6abeb3a9d601",
+      "createdAt": "2026-07-05T16:44:00.000Z"
+    },
+    "stillsat": {
+      "username": "StillSat",
+      "passwordHash": "008c70392e3abfbd0fa47bbc2ed96aa99bd49e159727fcba0f2e6abeb3a9d601",
+      "createdAt": "2026-07-05T16:44:00.000Z"
+    },
+    "uquo": {
+      "username": "Uquo",
+      "passwordHash": "008c70392e3abfbd0fa47bbc2ed96aa99bd49e159727fcba0f2e6abeb3a9d601",
+      "createdAt": "2026-07-05T16:44:00.000Z"
+    },
+    "peskysumo": {
+      "username": "PeskySumo",
+      "passwordHash": "008c70392e3abfbd0fa47bbc2ed96aa99bd49e159727fcba0f2e6abeb3a9d601",
+      "createdAt": "2026-07-05T16:44:00.000Z"
+    },
+    "miran": {
+      "username": "Miran",
+      "passwordHash": "008c70392e3abfbd0fa47bbc2ed96aa99bd49e159727fcba0f2e6abeb3a9d601",
+      "createdAt": "2026-07-05T16:44:00.000Z"
+    },
+    "rancid": {
+      "username": "Rancid",
+      "passwordHash": "008c70392e3abfbd0fa47bbc2ed96aa99bd49e159727fcba0f2e6abeb3a9d601",
+      "createdAt": "2026-07-05T16:55:00.000Z"
     }
   }
 }

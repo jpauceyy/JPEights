@@ -33,35 +33,105 @@ export default function TeamGenerator({
   const [saveStatus, setSaveStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [copied, setCopied] = useState(false);
 
+  // New customization states
+  const [matchFormat, setMatchFormat] = useState<"all" | "3v3" | "4v4">("all");
+  const [generationMode, setGenerationMode] = useState<"balanced" | "random">("balanced");
+  const [benchPlayers, setBenchPlayers] = useState<PlayerStats[]>([]);
+
   // Auto balance on player load or config change
   const triggerBalance = async () => {
     if (currentPlayers.length === 0) return;
     setIsBalancing(true);
     setSaveStatus(null);
-    try {
-      const res = await apiFetch("/api/balance", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          players: currentPlayers,
-          gameId: gameConfig.id,
-        }),
-      });
+    setBenchPlayers([]);
 
-      if (!res.ok) throw new Error("Failed to balance teams");
-      const data = await res.json();
+    let targetCount = currentPlayers.length;
+    if (matchFormat === "3v3") targetCount = 6;
+    if (matchFormat === "4v4") targetCount = 8;
+
+    if (currentPlayers.length < targetCount) {
+      setIsBalancing(false);
+      setTeamSplit(null);
+      return;
+    }
+
+    let playing: PlayerStats[] = [];
+    let benched: PlayerStats[] = [];
+
+    if (matchFormat === "all") {
+      playing = [...currentPlayers];
+    } else {
+      if (generationMode === "balanced") {
+        // Sort by rating to grab the highest rated players for the match
+        const sorted = [...currentPlayers].sort((a, b) => b.rating - a.rating);
+        playing = sorted.slice(0, targetCount);
+        benched = sorted.slice(targetCount);
+      } else {
+        // Randomly select playing players
+        const shuffled = [...currentPlayers];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        playing = shuffled.slice(0, targetCount);
+        benched = shuffled.slice(targetCount);
+      }
+    }
+
+    setBenchPlayers(benched);
+
+    if (generationMode === "balanced") {
+      try {
+        const res = await apiFetch("/api/balance", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            players: playing,
+            gameId: gameConfig.id,
+          }),
+        });
+
+        if (!res.ok) throw new Error("Failed to balance teams");
+        const data = await res.json();
+        setTeamSplit({
+          teamA: data.teamA,
+          teamB: data.teamB,
+          totalRatingA: data.totalRatingA,
+          totalRatingB: data.totalRatingB,
+          difference: data.difference,
+          sizeDiff: data.sizeDiff,
+          constraintsSatisfied: data.constraintsSatisfied,
+        });
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsBalancing(false);
+      }
+    } else {
+      // Randomized split
+      const shuffledPlaying = [...playing];
+      for (let i = shuffledPlaying.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledPlaying[i], shuffledPlaying[j]] = [shuffledPlaying[j], shuffledPlaying[i]];
+      }
+
+      const half = Math.ceil(shuffledPlaying.length / 2);
+      const teamA = shuffledPlaying.slice(0, half);
+      const teamB = shuffledPlaying.slice(half);
+
+      const totalRatingA = parseFloat(teamA.reduce((sum, p) => sum + p.rating, 0).toFixed(1));
+      const totalRatingB = parseFloat(teamB.reduce((sum, p) => sum + p.rating, 0).toFixed(1));
+      const difference = parseFloat(Math.abs(totalRatingA - totalRatingB).toFixed(1));
+
       setTeamSplit({
-        teamA: data.teamA,
-        teamB: data.teamB,
-        totalRatingA: data.totalRatingA,
-        totalRatingB: data.totalRatingB,
-        difference: data.difference,
-        sizeDiff: data.sizeDiff,
-        constraintsSatisfied: data.constraintsSatisfied,
+        teamA,
+        teamB,
+        totalRatingA,
+        totalRatingB,
+        difference,
+        sizeDiff: Math.abs(teamA.length - teamB.length),
+        constraintsSatisfied: true,
       });
-    } catch (err) {
-      console.error(err);
-    } finally {
       setIsBalancing(false);
     }
   };
@@ -71,8 +141,9 @@ export default function TeamGenerator({
       triggerBalance();
     } else {
       setTeamSplit(null);
+      setBenchPlayers([]);
     }
-  }, [currentPlayers, gameConfig]);
+  }, [currentPlayers, gameConfig, matchFormat, generationMode]);
 
   // Manually swap a player to the opposite team
   const handleMovePlayer = (playerName: string, currentTeam: "A" | "B") => {
@@ -144,7 +215,7 @@ export default function TeamGenerator({
         gameId: gameConfig.id,
         gameName: gameConfig.name,
         screenshotsCount: 0, // Placeholder
-        players: currentPlayers,
+        players: [...teamSplit.teamA, ...teamSplit.teamB],
         teams: {
           teamA: {
             players: teamSplit.teamA,
@@ -218,6 +289,9 @@ export default function TeamGenerator({
     );
   };
 
+  const neededPlayers = matchFormat === "3v3" ? 6 : matchFormat === "4v4" ? 8 : 0;
+  const hasEnoughPlayers = currentPlayers.length >= neededPlayers;
+
   return (
     <div id="team-generator-card" className="bg-[#121824] border border-[#1e293b] rounded-xl p-6 shadow-2xl space-y-6">
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-slate-900 pb-4">
@@ -234,8 +308,8 @@ export default function TeamGenerator({
           <button
             id="recalculate-btn"
             onClick={triggerBalance}
-            disabled={isBalancing}
-            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border border-slate-800 text-slate-300 bg-slate-900 hover:bg-slate-850 transition-all cursor-pointer disabled:opacity-50"
+            disabled={isBalancing || !hasEnoughPlayers}
+            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border border-slate-800 text-slate-300 bg-slate-900 hover:bg-slate-850 transition-all cursor-pointer disabled:opacity-50 animate-fade-in"
           >
             <Shuffle className={`w-3.5 h-3.5 ${isBalancing ? "animate-spin" : ""}`} /> Reroll Balances
           </button>
@@ -243,7 +317,7 @@ export default function TeamGenerator({
           <button
             id="copy-teams-btn"
             onClick={handleCopyTeams}
-            disabled={!teamSplit}
+            disabled={!teamSplit || !hasEnoughPlayers}
             className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border border-slate-800 text-slate-300 bg-slate-900 hover:bg-slate-850 transition-all cursor-pointer disabled:opacity-50"
           >
             {copied ? (
@@ -260,11 +334,78 @@ export default function TeamGenerator({
           <button
             id="save-match-btn"
             onClick={handleSaveMatch}
-            disabled={!teamSplit || isSaving}
+            disabled={!teamSplit || isSaving || !hasEnoughPlayers}
             className="flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-505 transition-all cursor-pointer disabled:opacity-50"
           >
             <Save className="w-3.5 h-3.5" /> {isSaving ? "Saving..." : "Log Match History"}
           </button>
+        </div>
+      </div>
+
+      {/* Control selectors for mode and size */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-[#0c0f17]/40 p-4 rounded-xl border border-slate-900">
+        {/* Generation Mode Selector */}
+        <div className="space-y-2">
+          <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block">Generation Mode</label>
+          <div className="flex bg-[#0c0f17] p-1 rounded-lg border border-slate-800">
+            <button
+              onClick={() => setGenerationMode("balanced")}
+              className={`flex-1 py-1.5 px-3 text-xs font-bold rounded-md transition-all ${
+                generationMode === "balanced"
+                  ? "bg-emerald-600 text-white shadow-sm"
+                  : "text-gray-400 hover:text-white"
+              }`}
+            >
+              Skill-Balanced
+            </button>
+            <button
+              onClick={() => setGenerationMode("random")}
+              className={`flex-1 py-1.5 px-3 text-xs font-bold rounded-md transition-all ${
+                generationMode === "random"
+                  ? "bg-emerald-600 text-white shadow-sm"
+                  : "text-gray-400 hover:text-white"
+              }`}
+            >
+              Randomized
+            </button>
+          </div>
+        </div>
+
+        {/* Match Format Selector */}
+        <div className="space-y-2">
+          <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block">Match Format</label>
+          <div className="flex bg-[#0c0f17] p-1 rounded-lg border border-slate-800">
+            <button
+              onClick={() => setMatchFormat("all")}
+              className={`flex-1 py-1.5 px-3 text-xs font-bold rounded-md transition-all ${
+                matchFormat === "all"
+                  ? "bg-blue-600 text-white shadow-sm"
+                  : "text-gray-400 hover:text-white"
+              }`}
+            >
+              Roster Default
+            </button>
+            <button
+              onClick={() => setMatchFormat("3v3")}
+              className={`flex-1 py-1.5 px-3 text-xs font-bold rounded-md transition-all ${
+                matchFormat === "3v3"
+                  ? "bg-blue-600 text-white shadow-sm"
+                  : "text-gray-400 hover:text-white"
+              }`}
+            >
+              3v3 Match
+            </button>
+            <button
+              onClick={() => setMatchFormat("4v4")}
+              className={`flex-1 py-1.5 px-3 text-xs font-bold rounded-md transition-all ${
+                matchFormat === "4v4"
+                  ? "bg-blue-600 text-white shadow-sm"
+                  : "text-gray-400 hover:text-white"
+              }`}
+            >
+              4v4 Match
+            </button>
+          </div>
         </div>
       </div>
 
@@ -282,7 +423,20 @@ export default function TeamGenerator({
         </div>
       )}
 
-      {teamSplit ? (
+      {/* Warning for insufficient players */}
+      {!hasEnoughPlayers && (
+        <div className="bg-red-950/20 border border-red-900/40 p-4 rounded-xl text-center space-y-2">
+          <p className="text-sm font-semibold text-red-350">
+            ⚠️ Insufficient Players for Match Format
+          </p>
+          <p className="text-xs text-gray-400">
+            You need at least {neededPlayers} players in the active roster to generate a {matchFormat} match. 
+            Currently you have {currentPlayers.length} players.
+          </p>
+        </div>
+      )}
+
+      {hasEnoughPlayers && teamSplit ? (
         <div className="space-y-6">
           {/* Rating Spread Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-[#0c0f17] border border-slate-900 p-4 rounded-xl">
@@ -306,7 +460,7 @@ export default function TeamGenerator({
           </div>
 
           {/* Constraints warning if applicable */}
-          {!teamSplit.constraintsSatisfied && (
+          {generationMode === "balanced" && !teamSplit.constraintsSatisfied && (
             <div className="bg-amber-950/10 border border-amber-900/40 p-3 rounded-lg text-xs text-amber-300 flex items-center gap-2">
               <Lock className="w-4 h-4 shrink-0" />
               <span>
@@ -341,12 +495,12 @@ export default function TeamGenerator({
                         <div className="space-y-1 overflow-hidden">
                           <div className="flex items-center gap-2">
                             <p className="font-semibold text-white text-sm truncate">{relations.displayName}</p>
-                            {relations.locks.length > 0 && (
+                            {generationMode === "balanced" && relations.locks.length > 0 && (
                               <span title={`Locked with: ${relations.locks.join(", ")}`} className="text-emerald-400 cursor-help">
                                 <Lock className="w-3 h-3" />
                               </span>
                             )}
-                            {relations.opposites.length > 0 && (
+                            {generationMode === "balanced" && relations.opposites.length > 0 && (
                               <span title={`Forced opposite to: ${relations.opposites.join(", ")}`} className="text-red-400 cursor-help">
                                 <EyeOff className="w-3 h-3" />
                               </span>
@@ -404,12 +558,12 @@ export default function TeamGenerator({
                         <div className="space-y-1 overflow-hidden">
                           <div className="flex items-center gap-2">
                             <p className="font-semibold text-white text-sm truncate">{relations.displayName}</p>
-                            {relations.locks.length > 0 && (
+                            {generationMode === "balanced" && relations.locks.length > 0 && (
                               <span title={`Locked with: ${relations.locks.join(", ")}`} className="text-emerald-400 cursor-help">
                                 <Lock className="w-3 h-3" />
                               </span>
                             )}
-                            {relations.opposites.length > 0 && (
+                            {generationMode === "balanced" && relations.opposites.length > 0 && (
                               <span title={`Forced opposite to: ${relations.opposites.join(", ")}`} className="text-red-400 cursor-help">
                                 <EyeOff className="w-3 h-3" />
                               </span>
@@ -443,8 +597,32 @@ export default function TeamGenerator({
               </div>
             </div>
           </div>
+
+          {/* Bench / Substitutes Section */}
+          {benchPlayers.length > 0 && (
+            <div className="border border-slate-900 bg-[#0c0f17]/40 rounded-xl p-4 space-y-3">
+              <span className="text-xs font-bold text-gray-400 uppercase tracking-wider block">
+                Substitutes / Bench ({benchPlayers.length})
+              </span>
+              <div className="flex flex-wrap gap-2.5">
+                {benchPlayers.map((player) => {
+                  const relations = getPlayerRelations(player.name);
+                  return (
+                    <div
+                      key={player.name}
+                      className="flex items-center gap-2 py-1.5 px-3 bg-[#121824] border border-slate-800 rounded-lg text-xs"
+                    >
+                      {renderInlineAvatar(relations.avatar, relations.displayName)}
+                      <span className="font-semibold text-gray-300">{relations.displayName}</span>
+                      <span className="text-gray-500 font-mono text-[10px]">({player.rating})</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
-      ) : (
+      ) : hasEnoughPlayers && (
         <div className="text-center py-10">
           <Shuffle className="w-8 h-8 text-slate-700 animate-pulse mx-auto mb-2" />
           <p className="text-gray-500 text-sm">Please insert or extract players to generate balanced matchups.</p>

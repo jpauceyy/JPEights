@@ -4,6 +4,18 @@
 @theme {
   --font-sans: 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+
+  --color-emerald-50: #f0f4fa;
+  --color-emerald-100: #dbe5f3;
+  --color-emerald-200: #bcd0eb;
+  --color-emerald-300: #8fb1df;
+  --color-emerald-400: #5b8bcf;
+  --color-emerald-500: #194694;
+  --color-emerald-600: #123572;
+  --color-emerald-700: #0e2a5b;
+  --color-emerald-800: #0a1c3e;
+  --color-emerald-900: #07132c;
+  --color-emerald-950: #040b1b;
 }
 
 body {

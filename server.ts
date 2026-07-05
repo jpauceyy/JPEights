@@ -448,10 +448,18 @@ async function startServer() {
 
       const systemPrompt = `You are a professional esports gaming assistant specialized in game scoreboard parsing and OCR. 
 You will be given one or more scoreboard screenshots. Your job is to extract EVERY player and their exact statistics correctly.
-Extract the columns accurately: Player Name, Kills, Deaths, Assists, and Score (often labeled as Combat Score, Points, Damage, etc. map it logically to a single integer).
-If a field is missing, set it to 0. Do not guess stats if they are not there.
-If there are multiple pages or screenshots showing overlap of players or the other half of the match scoreboard, merge them into a single list of unique players. 
-Identify the game if visible, such as Valorant, Call of Duty, Counter-Strike, Apex Legends, League of Legends, Halo, Overwatch, etc. If unsure, specify "Custom / Generic".`;
+
+Guidelines for Player Name extraction:
+- Clean player names by removing level numbers (e.g., 55, 318, 437, 438), indicators (e.g., "◀", "<", ">"), prestige symbols, or icon descriptors that might be adjacent to or prefix the name.
+- Example: If the row reads "437 ◀ PeskySumo" or "55 ADI", extract "PeskySumo" or "ADI".
+
+Guidelines for Column Mapping:
+- Extract the columns accurately: Player Name, Kills, Deaths, Assists, and Score.
+- Score is often labeled as Score, Combat Score, Points, or Damage. Map it logically to a single integer.
+- For Call of Duty screenshots (like Search & Destroy), individual kills, deaths, and assists may not be displayed for all players in the main list table (they are only visible for the currently selected player at the bottom). For any player where kills/deaths/assists are not visible in the table, set them to 0. Do not guess or hallucinate stats.
+- Extract the exact "SCORE" value for every player (e.g., 1670, 1285, 680, 1400, 1260, 800).
+- If there are multiple pages or screenshots showing overlap of players or the other half of the match scoreboard, merge them into a single list of unique players. 
+- Identify the game if visible, such as Valorant, Call of Duty, Counter-Strike, Apex Legends, League of Legends, Halo, Overwatch, etc. If unsure, specify "Custom / Generic".`;
 
       const response = await ai.models.generateContent({
         model: "gemini-3.5-flash",

@@ -228,9 +228,11 @@ export default function App() {
       <header className="border-b border-slate-900 bg-[#0e1320] sticky top-0 z-50 shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-gradient-to-br from-emerald-500/10 to-blue-500/10 border border-emerald-500/30 rounded-xl text-emerald-400 shadow shadow-emerald-500/20">
-              <Gamepad2 className="w-5.5 h-5.5" />
-            </div>
+            <img
+              src="/logo.png"
+              alt="JPEIGHTS logo"
+              className="w-10 h-10 object-contain"
+            />
             <div>
               <h1 className="text-md sm:text-lg font-black tracking-wider text-white">
                 JPEIGHTS

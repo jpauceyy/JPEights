@@ -71,7 +71,7 @@ export default function AuthScreen({ onAuthSuccess, initialHasUsers }: AuthScree
   };
 
   return (
-    <div className="min-h-screen bg-[#07090e] bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(16,185,129,0.08),rgba(0,0,0,0))] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#07090e] bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(25,70,148,0.08),rgba(0,0,0,0))] flex items-center justify-center p-4">
       {/* Background Matrix/Grid lines */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f172a_1px,transparent_1px),linear-gradient(to_bottom,#0f172a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none opacity-20" />
 
@@ -84,11 +84,13 @@ export default function AuthScreen({ onAuthSuccess, initialHasUsers }: AuthScree
 
         {/* Tactical Title HUD */}
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 mb-2">
-            <Crosshair className="w-6 h-6 animate-pulse" />
-          </div>
+          <img
+            src="/logo.png"
+            alt="JPEIGHTS logo"
+            className="w-16 h-16 mx-auto mb-2 object-contain filter drop-shadow-[0_0_8px_rgba(25,70,148,0.25)]"
+          />
           <h1 className="text-xl md:text-2xl font-black text-white tracking-wider uppercase font-sans">
-            Tactical Link Terminal
+            JPEIGHTS
           </h1>
           <p className="text-xs text-gray-400 font-mono">
             {!initialHasUsers 
